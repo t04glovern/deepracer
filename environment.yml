@@ -1,0 +1,14 @@
+name: sagemaker
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.6
+  - pip
+  - pip:
+    - urllib3==1.24.3
+    - PyYAML==3.13
+    - ipython
+    - pandas
+    - awscli
+    - ./sagemaker-python-sdk

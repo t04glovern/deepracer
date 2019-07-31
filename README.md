@@ -1,4 +1,5 @@
 # DeepRacer
+
 A repo for running deepracer locally. The rl_coach code comes from https://github.com/awslabs/amazon-sagemaker-examples/tree/master/reinforcement_learning/rl_deepracer_robomaker_coach_gazebo
 
 **The DeepRacer console undlying bundle can update with no warning so this won't always be up to date with the console.**
@@ -7,27 +8,33 @@ A repo for running deepracer locally. The rl_coach code comes from https://githu
 
 For additonal help with OSX setup, please [refer to a supplimental guide provided by joezen777](https://gist.github.com/joezen777/6657bbe2bd4add5d1cdbd44db9761edb) in [issue #11](https://github.com/crr0004/deepracer/issues/11).
 
-# Running it all through docker
+## Running it all through docker
+
 I have been able to improve this process so it's easy for everyone to use. What you will need to run this is:
-  - Docker
-  - Python3
-  - [Minio the S3 emulator](https://min.io/download#/linux)
-  - Preferablly a Linux host as Docker works a lot better there
-  - A copy of this repo
+
+- Docker
+- Python3
+- [Minio the S3 emulator](https://min.io/download#/linux)
+- Preferablly a Linux host as Docker works a lot better there
+- A copy of this repo
   
-## General notes before we start
+### General notes before we start
+
 You may not need to do all these steps as they pertain to general setup of the host.
+
 - Ensure you have root access to docker through the docker group. See [Post installation steps for docker](https://docs.docker.com/install/linux/linux-postinstall/)
 - Please post an issue if you get issues cloning the repo, make sure to use `git clone --recurse-submodules https://github.com/crr0004/deepracer.git` to get them all. You will get an error about benchmarks missing in `sagemaker-tensorflow-container`, you can safely ignore it.
 - You may get firewall issues with the docker containers trying to access the minio running outside the sagemaker-local network. You will see errors about *no route to <ip>* from the containers. For fixing this, you can either disable your firewall or allow the docker adapters as trusted adapters.
 - More notes to come, if you want anything added here, open an issue please.
 
-## The moving parts in order
+### The moving parts in order
+
 - Minio
 - Robomaker
 - Sagemaker
 
-## Minio
+### Minio
+
 Download the binary from [Minio](https://min.io/download#/linux) and put it somewhere you're okay with having large files.
 
 Then run `source rl_coach\env.sh` to get some reasonable defaults for your environemnt. Then run `./minio server data` to create a folder data. 
@@ -41,7 +48,8 @@ You should source that `env.sh` for every terminal you open when interacting wit
 
 I suggest you `cat rl_coach\env.sh` to see what is being set.
 
-## Sagemaker
+### Sagemaker
+
 I'd suggest you make a python virtual enviornment for this as it will install a fair bit, and with older versions of packages.
 
 To create a virtual environment you can run `python3 -m venv sagemaker_venv` to create the virtual environment in the directory sagemaker_venv. To activate the venv, run `source sagemaker_venv/bin/activate` on linux.
@@ -63,11 +71,13 @@ better way, set the environemnt variable `LOCAL_ENV_VAR_JSON_PATH` to a
 
 Now you can run `(cd rl_coach; python rl_deepracer_coach_robomaker.py)` to start sagemaker.
 
-### GPU Acceleration
+#### GPU Acceleration
+
 You can change the image name in `rl_deepracer_coach_robomaker.py` to your respective GPU type and do the setup needed for each type, see each section.
 
-### NVIDIA GPU Acceleration
-You can change the image name in `rl_deepracer_coach_robomaker.py` to "crr0004/sagemaker-rl-tensorflow:nvidia" to use GPU accerlation. You will also need to setup docker to use the GPU by following https://github.com/NVIDIA/nvidia-docker.
+#### NVIDIA GPU Acceleration
+
+You can change the image name in `rl_deepracer_coach_robomaker.py` to "crr0004/sagemaker-rl-tensorflow:nvidia" to use GPU accerlation. You will also need to setup docker to use the GPU by following [https://github.com/NVIDIA/nvidia-docker](https://github.com/NVIDIA/nvidia-docker). You can run `nvidia-docker.sh` to make these changes however do so with caution.
 
 In this file update `instance_type` to `local_gpu` to run sagemaker in nvidia runtime.
 
@@ -77,20 +87,24 @@ cause privilaged to be passed to the docker compose command. You can also use
 the file `docker_compose_extra.json` to modify the docker compose file that is
 used to launch the sagemaker container.
 
-### AMD GPU Acceleration
-You can change the image name in `rl_deepracer_coach_robomaker.py` to  "crr0004/sagemaker-rl-tensorflow:amd". 
-You will need to install [ROCm](https://github.com/RadeonOpenCompute/ROCm) and then ensure there is the kfd device on your system. 
+#### AMD GPU Acceleration
+
+You can change the image name in `rl_deepracer_coach_robomaker.py` to  "crr0004/sagemaker-rl-tensorflow:amd".
+You will need to install [ROCm](https://github.com/RadeonOpenCompute/ROCm) and then ensure there is the kfd device on your system.
 If you're using an upstream kernel, there is a section in the [ROCm Readme](https://github.com/RadeonOpenCompute/ROCm#using-rocm-with-upstream-kernel-drivers) to enable a kfd device.
-Then you will need to uncomment the line in `env.sh` to to enable `LOCAL_EXTRA_DOCKER_COMPOSE` and add 
-```
+Then you will need to uncomment the line in `env.sh` to to enable `LOCAL_EXTRA_DOCKER_COMPOSE` and add
+
+```bash
 "devices": [
-	"/dev/kfd:/dev/kfd",
-	"/dev/dri:/dev/dri"
+    "/dev/kfd:/dev/kfd",
+    "/dev/dri:/dev/dri"
 ]
 ```
+
 to `docker_compose_extra.json`
 
-### Starting robomaker
+#### Starting robomaker
+
 Firstly to get the images I have built, run `docker pull crr0004/deepracer_robomaker:console`, no need to alter the tag unless you want to. This image are built from `docker/Robomaker-kinetic-debug.docker`, and the `crr0004/deepracer_robomaker:1.0b` is built from `docker/Robomaker-kinetic.docker` but shouldn't need to use those docker files unless you want to build it from scratch or do it without docker.
 
 You will need to alter the `robomaker.env` file to change the `WORLD_NAME` to the track you want, and anything else.
@@ -104,15 +118,18 @@ command mounts all the directories to local directories so you can see all the
 files. You can replace the `"./run.sh"` part to `bash` and you will get a
 shell in the container.
 
-### Viewing Gazebo and the car running
+#### Viewing Gazebo and the car running
+
 You can run `vncviewer localhost:8080` to get a VNC view of the running container.
 
-### Altering action space
+#### Altering action space
+
 You now specify your action space in the json file you pass in through
 `MODEL_METADATA_FILE_S3_KEY`, which is defaulted to
 `bucket/custom_files/model_metadata.json`
 
-### dr_util.py
+#### dr_util.py
+
 *WARNING*
 THIS SCRIPT MODIFIES FILES IN YOUR AWS S3 BUCKET (DELETES AND UPLOADS).
 WHILE THE AUTHORS HAVE TAKEN CARE TO NOT MAKE IT HARMFUL,
@@ -127,10 +144,43 @@ To use it call it first: `./dr_util.py init`, then set values in created `dr_uti
 
 To learn more about usage, run `./dr_util.py -h`
 
-# [FAQ](https://github.com/crr0004/deepracer/wiki/FAQ)
-# [Wiki](https://github.com/crr0004/deepracer/wiki)
+## Running everything through docker-compose
+
+Experimentally, you can set everything up through docker-compose, which greatly reduces the complexity of setup.
+
+There are two commands you have to run before using docker-compose:
+
+```bash
+docker pull nabcrr/sagemaker-rl-tensorflow:console
+docker tag nabcrr/sagemaker-rl-tensorflow:console 520713654638.dkr.ecr.us-east-1.amazonaws.com/sagemaker-rl-tensorflow:coach0.11-cpu-py3
+```
+
+This pulls nabcrr's sagemaker and labels it as amazon's. The reason this is required is that rl_coach spawns its own docker instances of the amazon tagged container, which is locked behind authentication. Solution: fool it into thinking nabcrr's container is the real one!
+
+Next, create an `.env` file that will be passed into all the docker containers. You can just copy over `.env.example`.
+
+Afterwards, run:
+
+```bash
+docker-compose up
+```
+
+This will pull and build the required containers. You will get an issue with S3 because the minio bucket hasn't been created - you'll have to create the bucket and copy the custom_files as described in the minio tutorial above. By default, the data directory will be exposed to `.minio` for your convenience.
+
+Once the bucket is set up, kill any active docker containers and run `docker-compose up` again.
+
+## Gotchas
+
+rl_coach relies on dynamically spawning more docker containers. We handle this by using sibling containers - we mount `/var/run/docker.sock:/var/run/docker.sock` as a volume. However, when shutting down docker-compose, these sibling containers don't get killed, so you have to manually clean them up.
+
+Additionally, due to the nature of sibling volume bindings, the sagemaker container doesn't actually get bound to rl_coach - it gets bound to the base system. This means that (by default) docker will bind the directory to `/robo/container` to your base filesystem, as that's where sagemaker would expect them to be on rl_coach.
+
+Finally, `//var/run/docker.sock:/var/run/docker.sock` needs to be used for windows. You use `/var/run/docker.sock:/var/run/docker.sock` on unix systems.
+
+## [FAQ](https://github.com/crr0004/deepracer/wiki/FAQ)
+
+## [Wiki](https://github.com/crr0004/deepracer/wiki)
 
 ## Not listed here? Look at the closed/open issues or open a new one if you are not sure
-
 
 ---

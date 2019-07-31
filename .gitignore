@@ -107,3 +107,10 @@ venv.bak/
 
 # just some dev files
 dr_util_config.json
+
+# ignore directories created by docker-compose containers
+.minio/
+.robo/
+
+# IDEs
+.vscode/
