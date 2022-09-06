@@ -5,6 +5,14 @@ networks:
     external: true
 
 services:
+  # webvnc:
+  #   container_name: webvnc
+  #   # image: jammrwcky/novnc
+  #   image: psharkey/novnc
+  #   ports:
+  #     - 8080:8080
+    
+
   minio:
     container_name: minio
     image: minio/minio
