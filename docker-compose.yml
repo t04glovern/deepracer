@@ -5,6 +5,14 @@ networks:
     external: true
 
 services:
+  # webvnc:
+  #   container_name: webvnc
+  #   # image: jammrwcky/novnc
+  #   image: psharkey/novnc
+  #   ports:
+  #     - 8080:8080
+    
+
   minio:
     container_name: minio
     image: minio/minio
@@ -15,6 +23,9 @@ services:
     - './.minio/config:/root/.minio'
     command: server data
     env_file: .env
+    networks: 
+      - sagemaker-local
+
   rl_coach:
     container_name: rl_coach
     build: 
@@ -28,6 +39,8 @@ services:
     - '/robo/container:/robo/container'
     depends_on:
     - minio
+    networks: 
+      - sagemaker-local
   robomaker:
     container_name: robomaker
     image: 'nabcrr/deepracer_robomaker:console'
@@ -36,6 +49,8 @@ services:
     env_file: .env
     depends_on:
     - rl_coach
+    networks: 
+      - sagemaker-local
     # volumes:
     # - ./aws-robomaker-sample-application-deepracer/simulation_ws/src:/app/robomaker-deepracer/simulation_ws/src
     # - ./.robo/checkpoint:/root/.ros/
